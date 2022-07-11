@@ -7,7 +7,7 @@ async function main() {
   const wallet =
     process.env.MNEMONIC && process.env.MNEMONIC.length > 0
       ? ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
-      : new ethers.Wallet(process.env.PRIVATE_KEY as string);
+      : new ethers.Wallet(process.env.PRIVATE_KEY_USER as string);
   console.log(`Using address ${wallet.address}`);
   const provider = ethers.providers.getDefaultProvider("goerli");
   const signer = wallet.connect(provider);
