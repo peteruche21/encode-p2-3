@@ -17,7 +17,7 @@ async function main() {
   if (balance < 0.01) {
     throw new Error("Not enough ether");
   }
-  const { deployer } = await getNamedAccounts();
+  const { user } = await getNamedAccounts();
   const CustomBallotAddress = await (
     await deployments.get("CustomBallot")
   ).address;
@@ -31,7 +31,7 @@ async function main() {
     signer
   ) as CustomBallot;
 
-  console.log(`casting vote to CustomBallot from ${deployer}`);
+  console.log(`casting vote to CustomBallot from ${user}`);
   const amount = 0;
   const tx = await CustomBallotContract.vote(
     1,

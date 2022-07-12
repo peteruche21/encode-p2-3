@@ -39,7 +39,7 @@ async function main() {
   console.log("checking for vote power..");
   const votingPower = await tokenContract.getVotes(user);
   const formattedVotingPower = Number(ethers.utils.formatEther(votingPower));
-  console.log("voting power for ${user} is ", formattedVotingPower);
+  console.log(`voting power for ${user} is `, formattedVotingPower);
 }
 
 main().catch((error) => {

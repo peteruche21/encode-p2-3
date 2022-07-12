@@ -1,39 +1,25 @@
 import { expect } from "./chai";
 // eslint-disable-next-line node/no-unpublished-import
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers } from "hardhat";
+import { ethers, deployments } from "hardhat";
 // eslint-disable-next-line node/no-missing-import
-import { CustomBallot, MyToken } from "../typechain";
+import { CustomBallot, MyToken } from "../../typechain-types";
 
-const PROPOSALS = ["Proposal 1", "Proposal 2", "Proposal 3"];
+const PROPOSALS = ["proposal-1", "proposal-2", "proposal-3"];
 const BASE_VOTE_POWER = 10;
 const PROPOSAL_CHOSEN = [0, 1, 2];
 const USED_VOTE_POWER = 5;
 const ACCOUNTS_FOR_TESTING = 3;
 
-function convertStringArrayToBytes32(array: string[]) {
-  const bytes32Array = [];
-  for (let index = 0; index < array.length; index++) {
-    bytes32Array.push(ethers.utils.formatBytes32String(array[index]));
-  }
-  return bytes32Array;
-}
-
 describe("Ballot", function () {
   let ballotContract: CustomBallot;
-  let ballotFactory: any;
-  let tokenContractFactory: any;
   let tokenContract: MyToken;
   let accounts: SignerWithAddress[];
 
   beforeEach(async () => {
     accounts = await ethers.getSigners();
-    [ballotFactory, tokenContractFactory] = await Promise.all([
-      ethers.getContractFactory("CustomBallot"),
-      ethers.getContractFactory("MyToken"),
-    ]);
-    tokenContract = await tokenContractFactory.deploy();
-    await tokenContract.deployed();
+    await deployments.fixture(["all"]);
+    tokenContract = await ethers.getContract("MyToken");
   });
 
   describe("when voting power is given", async () => {
@@ -71,11 +57,8 @@ describe("Ballot", function () {
 
   describe("when the ballot contract is deployed", async () => {
     beforeEach(async () => {
-      ballotContract = await ballotFactory.deploy(
-        convertStringArrayToBytes32(PROPOSALS),
-        tokenContract.address
-      );
-      await ballotContract.deployed();
+      await deployments.fixture(["all"]);
+      ballotContract = await ethers.getContract("CustomBallot");
     });
 
     it("has the provided proposals", async () => {
@@ -108,17 +91,14 @@ describe("Ballot", function () {
 
       describe("when a ballot is created", async () => {
         beforeEach(async () => {
-          ballotContract = await ballotFactory.deploy(
-            convertStringArrayToBytes32(PROPOSALS),
-            tokenContract.address
-          );
-          await ballotContract.deployed();
+          await deployments.fixture(["all"]);
+          ballotContract = await ethers.getContract("CustomBallot");
         });
 
         for (let index = 0; index < ACCOUNTS_FOR_TESTING; index++) {
           describe(`when the account ${index + 1} votes`, async () => {
             const expectedVotes = [0, 0, 0];
-            if (index <= batch) {
+            if (index < batch) {
               beforeEach(async () => {
                 const voteTx = await ballotContract
                   .connect(accounts[index + 1])
@@ -135,7 +115,6 @@ describe("Ballot", function () {
                   expectedVotes[PROPOSAL_CHOSEN[index]]
                 );
               });
-
               it("updates the spent votes for that account", async () => {
                 const spentVotes = await ballotContract.spentVotePower(
                   accounts[index + 1].address
